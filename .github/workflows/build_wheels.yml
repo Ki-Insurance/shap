@@ -79,11 +79,22 @@ jobs:
           name: sdist_files
           path: dist
         
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.3.0
+
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0.4.1
+        with:
+          workload_identity_provider: "projects/137670451433/locations/global/workloadIdentityPools/python-ar-pool-1hyp/providers/python-gh-provider"
+          service_account: "ki-pypi@ki-artifact-registries-cf08.iam.gserviceaccount.com"
+
       - name: check
         run: twine check dist/*
         
       - name: upload
         run: twine upload dist/*
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+          TWINE_REPOSITORY_URL: https://europe-python.pkg.dev/ki-artifact-registries-cf08/ki-pypi/
+          TWINE_USERNAME: oauth2accesstoken
+          TWINE_PASSWORD: $(gcloud auth print-access-token)
